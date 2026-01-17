@@ -136,7 +136,10 @@ async def login(
     Login user and return JWT token.
     
     Accepts username or email for login.
+    Logs successful and failed login attempts for security monitoring.
     """
+    from backend.app.services.audit import log_auth_event, AuditAction
+    
     # Find user by username or email
     result = await db.execute(
         select(User).where(
@@ -146,6 +149,14 @@ async def login(
     user = result.scalar_one_or_none()
     
     if not user:
+        # Log failed login attempt
+        await log_auth_event(
+            db=db,
+            action=AuditAction.LOGIN_FAILED,
+            user_id=None,
+            username=credentials.username,
+            metadata={"reason": "User not found"}
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials",
@@ -154,6 +165,14 @@ async def login(
     
     # Verify password
     if not verify_password(credentials.password, user.hashed_password):
+        # Log failed login attempt
+        await log_auth_event(
+            db=db,
+            action=AuditAction.LOGIN_FAILED,
+            user_id=user.id,
+            username=user.username,
+            metadata={"reason": "Invalid password"}
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials",
@@ -162,6 +181,14 @@ async def login(
     
     # Check if user is active
     if not user.is_active:
+        # Log failed login attempt for blocked user
+        await log_auth_event(
+            db=db,
+            action=AuditAction.LOGIN_FAILED,
+            user_id=user.id,
+            username=user.username,
+            metadata={"reason": "Account is inactive/blocked"}
+        )
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Inactive user account"
@@ -176,6 +203,14 @@ async def login(
     }
     
     access_token = create_access_token(data=jwt_payload)
+    
+    # Log successful login
+    await log_auth_event(
+        db=db,
+        action=AuditAction.LOGIN_SUCCESS,
+        user_id=user.id,
+        username=user.username
+    )
     
     return TokenResponse(
         access_token=access_token,

@@ -1,32 +1,31 @@
-# Dockerfile for Render Deployment
-# Based on python:3.13-slim
+FROM python:3.10-slim
 
-FROM python:3.13-slim
-
-# Set working directory
 WORKDIR /app
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    PORT=8000
 
-# Install system dependencies (required for building some python packages)
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
+    build-essential \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
+# Install python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY . .
 
-# Expose port (Render sets PORT env var, but we start on 8000 by default)
-EXPOSE 8000
+# Create non-root user
+RUN adduser --disabled-password --gecos '' appuser && chown -R appuser:appuser /app
+USER appuser
 
-# Command to run the application
-# We use 'sh -c' to expand the $PORT variable correctly at runtime
-CMD ["sh", "-c", "uvicorn backend.app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Expose port
+EXPOSE $PORT
+
+# Start command
+CMD ["./scripts/start.sh"]

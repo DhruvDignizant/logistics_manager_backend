@@ -1,0 +1,55 @@
+phase: Phase 2
+sub_phase: 2.3.1a
+name: Fleet Vehicle Management
+goal: >
+  Allow Fleet Owners to register and manage vehicles
+  with accurate capacity and identification to support
+  routing and ML-based matching.
+
+actors:
+  - FLEET_OWNER
+  - ADMIN
+
+data_models:
+  fleet_vehicles:
+    ownership: fleet_owner_id
+    fields:
+      - vehicle_number
+      - vehicle_type
+      - max_weight_kg
+      - max_volume_cm3
+      - length_cm
+      - width_cm
+      - height_cm
+      - fuel_type
+      - is_active
+
+apis:
+  fleet_owner:
+    - POST /fleet-owner/vehicles
+    - GET /fleet-owner/vehicles
+    - PATCH /fleet-owner/vehicles/{vehicleId}
+    - PATCH /fleet-owner/vehicles/{vehicleId}/deactivate
+
+  admin:
+    - GET /admin/vehicles
+
+guards:
+  - RoleGuard(FLEET_OWNER)
+  - OwnershipGuard(fleet_owner_id)
+  - StatusGuard(ACTIVE)
+
+audit_events:
+  - VEHICLE_CREATED
+  - VEHICLE_UPDATED
+  - VEHICLE_DEACTIVATED
+
+constraints:
+  - Vehicle belongs to one Fleet Owner
+  - Vehicle number must be unique
+  - Inactive vehicles cannot be routed
+
+exit_criteria:
+  - Vehicle CRUD functional
+  - Ownership enforced
+  - Vehicles attachable to routes

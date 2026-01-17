@@ -1,0 +1,48 @@
+phase: Phase 2
+sub_phase: 2.3.3
+name: Route Request Decisions & ML Feedback
+goal: >
+  Allow Fleet Owners to accept or reject hub route requests
+  and feed outcomes into the ML training pipeline.
+
+actors:
+  - FLEET_OWNER
+  - HUB_OWNER
+  - ADMIN
+
+data_models:
+  hub_route_requests:
+    fields_added:
+      - decision
+      - decision_reason
+      - decided_at
+
+apis:
+  fleet_owner:
+    - POST /fleet-owner/route-requests/{requestId}/accept
+    - POST /fleet-owner/route-requests/{requestId}/reject
+
+  hub_owner:
+    - GET /hub-owner/route-requests
+
+ml_feedback:
+  source: hub_route_requests
+  label_mapping:
+    ACCEPTED: 1
+    REJECTED: 0
+
+audit_events:
+  - HUB_ROUTE_ACCEPTED
+  - HUB_ROUTE_REJECTED
+
+constraints:
+  - Decision is immutable
+  - One decision per request
+  - Reject requires reason
+  - No trip or driver logic
+
+exit_criteria:
+  - Requests decided
+  - ML feedback stored
+  - Ownership enforced
+  - Phase boundary respected

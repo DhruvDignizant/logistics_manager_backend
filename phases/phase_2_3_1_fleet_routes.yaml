@@ -1,0 +1,56 @@
+phase: Phase 2
+sub_phase: 2.3.1
+name: Fleet Route APIs
+goal: >
+  Allow Fleet Owners to create and manage transport routes
+  without triggering ML, parcel matching, or assignments.
+
+actors:
+  - FLEET_OWNER
+  - ADMIN
+
+data_models:
+  fleet_routes:
+    ownership: fleet_owner_id
+    fields:
+      - route_name
+      - origin_lat
+      - origin_lng
+      - destination_lat
+      - destination_lng
+      - max_weight_kg
+      - max_volume_cm3
+      - is_active
+
+apis:
+  fleet_owner:
+    - POST /fleet-owner/routes
+    - GET /fleet-owner/routes
+    - GET /fleet-owner/routes/{routeId}
+    - PATCH /fleet-owner/routes/{routeId}
+    - PATCH /fleet-owner/routes/{routeId}/deactivate
+
+  admin:
+    - GET /admin/routes
+
+guards:
+  - RoleGuard(FLEET_OWNER)
+  - OwnershipGuard(fleet_owner_id)
+  - StatusGuard(ACTIVE)
+
+audit_events:
+  - ROUTE_CREATED
+  - ROUTE_UPDATED
+  - ROUTE_DEACTIVATED
+
+constraints:
+  - Route belongs to exactly one Fleet Owner
+  - Fleet Owner manages only own routes
+  - Admin is read-only
+  - No ML or parcel logic
+
+exit_criteria:
+  - Route CRUD functional
+  - Ownership enforced
+  - Audit logs written
+  - Phase boundary respected

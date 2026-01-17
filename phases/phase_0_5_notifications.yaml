@@ -1,0 +1,53 @@
+phase: Hotfix
+sub_phase: 0.5
+name: User Notifications
+goal: >
+  Provide fast, reliable, in-app notifications
+  for system updates, trips, and billing events.
+
+delivery:
+  type: in_app
+  persistence: database
+  async_ready: true
+
+data_models:
+  notifications:
+    fields:
+      - user_id
+      - type
+      - title
+      - message
+      - metadata
+      - is_read
+
+apis:
+  internal:
+    - POST /internal/notifications
+
+  user:
+    - GET /notifications
+    - PATCH /notifications/{id}/read
+    - PATCH /notifications/read-all
+
+events:
+  trip:
+    - TRIP_CREATED
+    - DRIVER_ASSIGNED
+    - TRIP_STARTED
+    - TRIP_COMPLETED
+  billing:
+    - CHARGE_CREATED
+    - SETTLEMENT_APPROVED
+    - SETTLEMENT_PAID
+  system:
+    - PLATFORM_UPDATE
+
+constraints:
+  - notifications_are_immutable
+  - internal_creation_only
+  - role_scoped_visibility
+
+exit_criteria:
+  - notifications_created
+  - users_can_read
+  - admin_can_broadcast

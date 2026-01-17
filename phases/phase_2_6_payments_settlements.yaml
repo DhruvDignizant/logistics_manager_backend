@@ -1,0 +1,91 @@
+phase: Phase 2
+sub_phase: 2.6
+name: Billing & Settlements
+goal: >
+  Calculate immutable trip charges using weight, volume, and distance,
+  create settlements, and record ledger entries with admin-controlled payouts.
+
+design_principles:
+  - Ledger-based accounting
+  - Immutable financial records
+  - Domain-first services
+  - Gateway-agnostic
+  - Idempotent processing
+
+pricing_model:
+  formula:
+    total_amount: >
+      base_price
+      + (distance_km * price_per_km)
+      + (total_weight_kg * price_per_kg)
+      + (total_volume_cm3 * price_per_volume)
+
+pricing_rule_resolution:
+  priority:
+    - fleet_owner_specific
+    - global_default
+  failure_mode: hard_fail
+
+data_models:
+  pricing_rules:
+    mutable_by: ADMIN
+  trip_charges:
+    unique_on: trip_id
+    immutable: true
+  settlements:
+    status_flow:
+      - PENDING
+      - APPROVED
+      - PAID
+  ledger_entries:
+    immutable: true
+    double_entry: true
+
+domain_services:
+  billing_service:
+    responsibilities:
+      - resolve_pricing_rule
+      - calculate_trip_charge
+      - create_trip_charge
+      - create_settlement
+      - write_ledger_entries
+    constraints:
+      - one_charge_per_trip
+      - transactional
+      - idempotent
+
+hooks:
+  trip_completion:
+    trigger: trip.status == COMPLETED
+    action: billing_service.process_trip(trip_id)
+
+apis:
+  admin:
+    - POST /admin/pricing-rules
+    - GET  /admin/pricing-rules
+    - POST /admin/settlements/{id}/approve
+    - POST /admin/settlements/{id}/mark-paid
+
+  hub_owner:
+    - GET /hub-owner/charges
+
+  fleet_owner:
+    - GET /fleet-owner/earnings
+
+audit_events:
+  - TRIP_CHARGE_CALCULATED
+  - PRICING_RULE_CREATED
+  - SETTLEMENT_APPROVED
+  - SETTLEMENT_PAID
+
+constraints:
+  - charges_created_only_for_completed_trips
+  - ledger_entries_append_only
+  - admin_only_mutations
+  - no_payment_gateway
+
+exit_criteria:
+  - billing_service_idempotent
+  - ledger_balanced
+  - settlements_admin_controlled
+  - read_only_views_working

@@ -1,0 +1,57 @@
+phase: Phase 2
+sub_phase: 2.1
+name: Hub Management
+goal: >
+  Allow Hub Owners to create and manage multiple hubs
+  with address and geo-location while enforcing strict ownership.
+
+actors:
+  - HUB_OWNER
+  - ADMIN
+
+data_models:
+  hubs:
+    ownership: hub_owner_id
+    fields:
+      - name
+      - address
+      - city
+      - state
+      - country
+      - pincode
+      - latitude
+      - longitude
+      - is_active
+
+apis:
+  hub_owner:
+    - POST /hub-owner/hubs
+    - GET /hub-owner/hubs
+    - GET /hub-owner/hubs/{hubId}
+    - PATCH /hub-owner/hubs/{hubId}
+    - PATCH /hub-owner/hubs/{hubId}/deactivate
+
+  admin:
+    - GET /admin/hubs
+
+guards:
+  - RoleGuard(HUB_OWNER)
+  - OwnershipGuard(hub_owner_id)
+  - StatusGuard(ACTIVE)
+
+audit_events:
+  - HUB_CREATED
+  - HUB_UPDATED
+  - HUB_DEACTIVATED
+
+constraints:
+  - Hub belongs to exactly one Hub Owner
+  - Hub Owner can manage only own hubs
+  - Admin has read-only access
+  - No parcel logic in this phase
+
+exit_criteria:
+  - Hub CRUD functional
+  - Ownership enforced
+  - Audit logs written
+  - Phase boundary respected

@@ -1,0 +1,58 @@
+phase: Phase 2
+sub_phase: 2.7
+name: Analytics & Optimization
+goal: >
+  Provide read-only analytics and optimization insights
+  across trips, routes, drivers, vehicles, finances, and ML signals.
+
+actors:
+  - FLEET_OWNER
+  - HUB_OWNER
+  - ADMIN
+
+domains:
+  - trip_performance
+  - route_efficiency
+  - vehicle_utilization
+  - driver_performance
+  - financial_analytics
+  - ml_signals
+
+data_sources:
+  - trips
+  - trip_stops
+  - trip_locations
+  - fleet_routes
+  - fleet_vehicles
+  - drivers
+  - trip_charges
+  - settlements
+  - ledger_entries
+  - route_match_scores
+
+apis:
+  fleet_owner:
+    - GET /fleet-owner/analytics/overview
+    - GET /fleet-owner/analytics/vehicles
+    - GET /fleet-owner/analytics/drivers
+    - GET /fleet-owner/analytics/routes
+
+  hub_owner:
+    - GET /hub-owner/analytics/overview
+    - GET /hub-owner/analytics/costs
+    - GET /hub-owner/analytics/deliveries
+
+  admin:
+    - GET /admin/analytics/system
+    - GET /admin/analytics/ml
+    - GET /admin/analytics/finance
+
+constraints:
+  - read_only
+  - no_execution_mutation
+  - cached_or_aggregated_queries
+
+exit_criteria:
+  - analytics_available
+  - performance_acceptable
+  - phase_boundary_respected

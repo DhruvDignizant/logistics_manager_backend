@@ -1,0 +1,44 @@
+phase: Phase 2
+sub_phase: 2.4.2
+name: Driver Assignment (Connected Routes)
+goal: >
+  Allow Fleet Owners to assign drivers to planned trips
+  while permitting multiple assignments only for connected routes.
+
+actors:
+  - FLEET_OWNER
+  - DRIVER
+  - ADMIN
+
+rules:
+  driver_assignment:
+    allow_multiple_planned: true
+    connectivity_required: true
+
+connectivity_definition:
+  - same_route
+  - destination_near_origin
+  - sequential_dates
+
+apis:
+  fleet_owner:
+    - PATCH /fleet-owner/trips/{tripId}/assign-driver
+    - PATCH /fleet-owner/trips/{tripId}/unassign-driver
+
+  driver:
+    - GET /driver/trips
+
+audit_events:
+  - DRIVER_ASSIGNED
+  - DRIVER_UNASSIGNED
+
+constraints:
+  - Trip must be PLANNED
+  - Driver must be ACTIVE
+  - Connectivity validation required
+  - No live execution
+
+exit_criteria:
+  - Drivers assigned correctly
+  - Connectivity enforced
+  - Phase boundary respected

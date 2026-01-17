@@ -1,0 +1,119 @@
+phase: Phase 1
+name: Core Foundation
+goal: >
+  Establish secure authentication, role-based access,
+  admin control, driver restrictions, and system-level guards
+  as the foundation for the logistics platform.
+
+roles:
+  - ADMIN
+  - HUB_OWNER
+  - FLEET_OWNER
+  - DRIVER
+
+sub_phases:
+  - id: 1.1
+    name: Authentication & Authorization
+    objectives:
+      - JWT based authentication
+      - Refresh token support
+      - Role embedded in token
+      - Driver self-registration disabled
+    modules:
+      - Login
+      - Register
+      - TokenRefresh
+      - Logout
+    constraints:
+      - Driver cannot self-register
+      - Blocked users cannot authenticate
+
+  - id: 1.2
+    name: Admin User Management
+    objectives:
+      - Full admin control over users
+      - Block / unblock users
+      - View all system users
+    modules:
+      - UserListing
+      - UserBlocking
+      - UserUnblocking
+      - UserAuditLogs
+    constraints:
+      - Admin-only access
+      - All actions must be audited
+
+  - id: 1.3
+    name: System Constraints & Guards
+    objectives:
+      - Enforce role boundaries
+      - Prevent privilege escalation
+    modules:
+      - RoleGuard
+      - OwnershipGuard
+      - StatusGuard
+    constraints:
+      - One role per user
+      - Driver belongs to exactly one Fleet Owner
+
+  - id: 1.4
+    name: Driver Creation & Restrictions
+    objectives:
+      - Fleet Owner managed drivers
+      - Driver CRUD control
+    modules:
+      - DriverCreate
+      - DriverUpdate
+      - DriverBlock
+      - DriverList
+    constraints:
+      - Only Fleet Owner can create drivers
+      - Fleet Owner can manage only own drivers
+
+  - id: 1.5
+    name: Token Revocation & Blocking
+    objectives:
+      - Immediate access termination
+      - Prevent ghost sessions
+    modules:
+      - TokenRevocation
+      - SessionManagement
+    constraints:
+      - Blocked users lose access instantly
+
+  - id: 1.6
+    name: Ownership & Role Enforcement
+    objectives:
+      - Secure multi-tenant isolation
+    modules:
+      - OwnershipValidation
+      - RoleValidation
+    constraints:
+      - Cross-account access forbidden
+
+  - id: 1.7
+    name: Admin Authority Finalization
+    objectives:
+      - Central system control
+    modules:
+      - AdminAPIs
+      - AuditLogging
+    constraints:
+      - All admin actions logged
+
+  - id: 1.8
+    name: Error Standards & Contracts
+    objectives:
+      - Consistent API responses
+    modules:
+      - ErrorFormatter
+      - ErrorCodes
+    constraints:
+      - No raw exceptions exposed
+
+exit_criteria:
+  - Authentication secured
+  - Driver restrictions enforced
+  - Admin authority active
+  - Guards validated
+  - Audit logs enabled

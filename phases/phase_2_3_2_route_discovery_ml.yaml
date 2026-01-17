@@ -1,0 +1,49 @@
+phase: Phase 2
+sub_phase: 2.3.2
+name: Route Discovery & ML Suggestions
+goal: >
+  Allow Hub Owners to discover fleet routes for parcels
+  using vehicle-backed capacity and self-hosted ML scoring.
+
+actors:
+  - HUB_OWNER
+  - FLEET_OWNER
+  - ADMIN
+
+dependencies:
+  - hubs
+  - parcels
+  - fleet_routes
+  - fleet_vehicles
+  - ml_route_weights
+
+apis:
+  hub_owner:
+    - GET /hub-owner/parcels/{parcelId}/route-suggestions
+    - POST /hub-owner/routes/{routeId}/request
+
+  fleet_owner:
+    - GET /fleet-owner/routes/{routeId}/requests
+
+ml:
+  enabled: true
+  type: LogisticRegression
+  fallback: StaticScoring
+  min_samples: 100
+  explainable: true
+
+audit_events:
+  - ROUTE_MATCH_SUGGESTED
+  - HUB_ROUTE_REQUESTED
+
+constraints:
+  - ML is advisory only
+  - No auto-assignment
+  - Vehicle capacity is authoritative
+  - One request per parcel per route
+
+exit_criteria:
+  - Route discovery works
+  - ML + fallback validated
+  - Explainability returned
+  - Phase boundary respected

@@ -1,0 +1,63 @@
+phase: Phase 2
+sub_phase: 2.2
+name: Parcel / Courier Management
+goal: >
+  Allow Hub Owners to manage parcels within their hubs,
+  including size, weight, quantity, and delivery due dates,
+  without introducing routing or fleet logic.
+
+actors:
+  - HUB_OWNER
+  - ADMIN
+
+data_models:
+  parcels:
+    ownership: hub_owner_id
+    relations:
+      - hub_id -> hubs.id
+    fields:
+      - reference_code
+      - description
+      - weight_kg
+      - length_cm
+      - width_cm
+      - height_cm
+      - quantity
+      - delivery_due_date
+      - status
+      - is_active
+
+apis:
+  hub_owner:
+    - POST /hub-owner/hubs/{hubId}/parcels
+    - GET /hub-owner/hubs/{hubId}/parcels
+    - GET /hub-owner/parcels/{parcelId}
+    - PATCH /hub-owner/parcels/{parcelId}
+    - PATCH /hub-owner/parcels/{parcelId}/cancel
+
+  admin:
+    - GET /admin/parcels
+
+guards:
+  - RoleGuard(HUB_OWNER)
+  - OwnershipGuard(hub_owner_id)
+  - HubOwnershipValidation
+  - StatusGuard(ACTIVE)
+
+audit_events:
+  - PARCEL_CREATED
+  - PARCEL_UPDATED
+  - PARCEL_CANCELLED
+
+constraints:
+  - Parcel belongs to exactly one hub
+  - Hub must be active
+  - Hub Owner can manage only own parcels
+  - Admin has read-only access
+  - No routing or fleet logic in this phase
+
+exit_criteria:
+  - Parcel CRUD functional
+  - Ownership enforced
+  - Audit logs written
+  - Phase boundary respected

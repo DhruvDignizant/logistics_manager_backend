@@ -6,11 +6,43 @@ This is the main application file for the Logistics Manager Backend.
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends
+from fastapi.exceptions import RequestValidationError
 from backend.app.core.config import settings
 from backend.app.api.v1.router import router as api_v1_router
 from backend.app.core.dependencies import get_current_user
 from backend.app.core.jwt import create_access_token
 from backend.app.db.session import engine, Base
+from backend.app.core.exceptions import (
+    AppException,
+    app_exception_handler,
+    http_exception_handler,
+    validation_exception_handler,
+    generic_exception_handler
+)
+from fastapi import HTTPException
+
+# Import models to ensure they are registered with Base
+from backend.app.models.user import User
+from backend.app.models.audit_log import AuditLog
+from backend.app.models.hub import Hub  # Phase 2.1
+from backend.app.models.parcel import Parcel  # Phase 2.2
+from backend.app.models.fleet_vehicle import FleetVehicle  # Phase 2.3.1a (before route for FK)
+from backend.app.models.fleet_route import FleetRoute  # Phase 2.3.1
+from backend.app.models.hub_route_request import HubRouteRequest  # Phase 2.3
+from backend.app.models.ml_route_weight import MLRouteWeight  # Phase 2.3
+from backend.app.models.ml_training_data import MLRouteTrainingData  # Phase 2.3
+from backend.app.models.trip import Trip  # Phase 2.4
+from backend.app.models.trip_stop import TripStop  # Phase 2.4
+from backend.app.models.route_request_trip_map import RouteRequestTripMap  # Phase 2.4
+from backend.app.models.vehicle_lock import VehicleLock  # Phase 2.5
+from backend.app.models.trip_location import TripLocation  # Phase 2.5
+from backend.app.models.pricing_rule import PricingRule  # Phase 2.6
+from backend.app.models.trip_charge import TripCharge  # Phase 2.6
+from backend.app.models.settlement import Settlement  # Phase 2.6
+from backend.app.models.ledger_entry import LedgerEntry  # Phase 2.6
+from backend.app.models.dlq import DeadLetterQueue  # Phase 3
+from backend.app.models.archived_trip_location import ArchivedTripLocation  # Phase 3
+from backend.app.models.notification import Notification  # Phase 0.5 (Hotfix)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -20,7 +52,7 @@ async def lifespan(app: FastAPI):
     1. Creates database tables on startup.
     2. Handles graceful shutdown (if needed).
     """
-    # Create tables on startup
+    # Create tables on startup (includes User and AuditLog)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield
@@ -34,6 +66,12 @@ app = FastAPI(
     description="A scalable FastAPI backend for logistics management",
     lifespan=lifespan,
 )
+
+# Register global exception handlers
+app.add_exception_handler(AppException, app_exception_handler)
+app.add_exception_handler(HTTPException, http_exception_handler)
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
+app.add_exception_handler(Exception, generic_exception_handler)
 
 
 @app.get("/health", tags=["Health"])

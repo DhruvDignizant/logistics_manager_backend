@@ -1,0 +1,68 @@
+phase: Phase 3
+name: Scale, Reliability & Enterprise Hardening
+goal: >
+  Harden the logistics platform for production scale,
+  reliability, observability, and enterprise operations.
+
+pillars:
+  - performance_scalability
+  - reliability_fault_tolerance
+  - observability_alerting
+  - data_lifecycle
+  - enterprise_governance
+
+performance_scalability:
+  actions:
+    - database_indexing
+    - pagination_enforcement
+    - analytics_caching
+    - background_aggregation_jobs
+
+reliability:
+  actions:
+    - idempotent_retries
+    - dead_letter_queues
+    - circuit_breakers
+    - feature_flags
+
+observability:
+  metrics:
+    - api_latency
+    - trip_execution_time
+    - gps_ingestion_rate
+    - billing_failures
+    - ml_acceptance_rate
+  logging:
+    - structured_logs
+    - correlation_ids
+  alerts:
+    - stuck_trips
+    - vehicle_lock_timeout
+    - billing_failure
+    - settlement_backlog
+
+data_lifecycle:
+  policies:
+    trip_locations: archive_after_30_days
+    audit_logs: retain_years
+    ledger_entries: immutable
+    analytics_snapshots: rolling_windows
+
+enterprise_controls:
+  roles:
+    - admin_read_only
+    - finance_admin
+  tools:
+    - manual_reprocessing
+    - backfill_jobs
+    - data_exports
+
+constraints:
+  - no_business_logic_changes
+  - no_feature_leakage
+
+exit_criteria:
+  - platform_stable
+  - observability_live
+  - retries_verified
+  - data_growth_controlled

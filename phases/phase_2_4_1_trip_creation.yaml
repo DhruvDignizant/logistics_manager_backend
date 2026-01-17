@@ -1,0 +1,41 @@
+phase: Phase 2
+sub_phase: 2.4.1
+name: Trip Creation (No Driver Assignment)
+goal: >
+  Convert accepted route requests into planned trips
+  with validated capacity and generated stops,
+  without involving drivers yet.
+
+actors:
+  - FLEET_OWNER
+  - HUB_OWNER
+  - ADMIN
+
+data_models:
+  - trips
+  - trip_stops
+  - route_request_trip_map
+
+apis:
+  fleet_owner:
+    - POST /fleet-owner/route-requests/{requestId}/create-trip
+    - GET /fleet-owner/trips
+
+  hub_owner:
+    - GET /hub-owner/parcels/{parcelId}/trip
+
+audit_events:
+  - TRIP_CREATED
+
+constraints:
+  - Trip created only from ACCEPTED request
+  - One trip per request
+  - Capacity validated against vehicle
+  - Trip starts in PLANNED state
+  - No driver assignment
+
+exit_criteria:
+  - Trip creation works
+  - Capacity enforced
+  - Stops generated
+  - Phase boundary respected

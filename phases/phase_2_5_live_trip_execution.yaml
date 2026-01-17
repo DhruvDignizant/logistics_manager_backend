@@ -1,0 +1,49 @@
+phase: Phase 2
+sub_phase: 2.5
+name: Live Trip Execution & Tracking
+goal: >
+  Enable drivers to execute trips with live tracking,
+  enforcing vehicle capacity locking and stop progression.
+
+actors:
+  - DRIVER
+  - FLEET_OWNER
+  - HUB_OWNER
+  - ADMIN
+
+data_models:
+  - trips
+  - trip_stops
+  - trip_locations
+  - vehicle_locks
+
+apis:
+  driver:
+    - POST /driver/trips/{tripId}/start
+    - POST /driver/trips/{tripId}/location
+    - PATCH /driver/trips/{tripId}/stops/{stopId}
+    - POST /driver/trips/{tripId}/complete
+
+  fleet_owner:
+    - GET /fleet-owner/trips/{tripId}/live
+
+  hub_owner:
+    - GET /hub-owner/parcels/{parcelId}/tracking
+
+audit_events:
+  - TRIP_STARTED
+  - STOP_ARRIVED
+  - STOP_COMPLETED
+  - TRIP_COMPLETED
+
+constraints:
+  - Vehicle locked on trip start
+  - One IN_PROGRESS trip per vehicle
+  - One IN_PROGRESS trip per driver
+  - Stop order enforced
+
+exit_criteria:
+  - Live execution works
+  - Tracking accurate
+  - Capacity locking enforced
+  - Phase boundary respected

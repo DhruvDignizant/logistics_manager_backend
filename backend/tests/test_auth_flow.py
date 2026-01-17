@@ -13,8 +13,43 @@ from backend.app.main import app
 from backend.app.db.session import get_db, Base
 from backend.app.models.enums import UserRole
 
+# Import all models to ensure they're registered with Base
+from backend.app.models.user import User
+from backend.app.models.audit_log import AuditLog
+from backend.app.models.hub import Hub
+from backend.app.models.parcel import Parcel
+from backend.app.models.fleet_vehicle import FleetVehicle
+from backend.app.models.fleet_route import FleetRoute
+from backend.app.models.hub_route_request import HubRouteRequest
+from backend.app.models.ml_route_weight import MLRouteWeight
+from backend.app.models.ml_training_data import MLRouteTrainingData
+from backend.app.models.trip import Trip
+from backend.app.models.trip_stop import TripStop
+from backend.app.models.route_request_trip_map import RouteRequestTripMap
+from backend.app.models.vehicle_lock import VehicleLock
+from backend.app.models.trip_location import TripLocation
+from backend.app.models.pricing_rule import PricingRule
+from backend.app.models.trip_charge import TripCharge
+from backend.app.models.settlement import Settlement
+from backend.app.models.ledger_entry import LedgerEntry
+from backend.app.models.dlq import DeadLetterQueue
+from backend.app.models.archived_trip_location import ArchivedTripLocation
+from backend.app.models.notification import Notification
+
 # 1. Setup In-Memory Test Database
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+
+# Enable foreign keys for SQLite
+from sqlalchemy import event
+from sqlalchemy.pool import Pool
+
+@event.listens_for(Pool, "connect")
+def set_sqlite_pragma(dbapi_conn, connection_record):
+    """Enable foreign key constraints for SQLite."""
+    if 'sqlite' in str(type(dbapi_conn)):
+        cursor = dbapi_conn.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
 
 engine = create_async_engine(
     TEST_DATABASE_URL,
@@ -34,7 +69,7 @@ app.dependency_overrides[get_db] = override_get_db
 
 @pytest.fixture(autouse=True)
 async def setup_database():
-    """Create tables before tests and drop after."""
+    """Create tables before each test and drop after."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield
@@ -62,7 +97,8 @@ async def test_admin_registration_blocked(client):
     }
     response = await client.post("/v1/auth/register", json=payload)
     assert response.status_code == 403
-    assert "Admin users cannot be registered" in response.json()["detail"]
+    data = response.json()
+    assert "Admin users cannot be registered" in data["message"]
 
 
 @pytest.mark.asyncio
@@ -97,7 +133,7 @@ async def test_driver_requires_fleet_owner(client):
     }
     response = await client.post("/v1/auth/register", json=payload)
     assert response.status_code == 400
-    assert "missing fleet_owner_id" in response.json()["detail"]
+    assert "missing fleet_owner_id" in response.json()["message"]
 
 
 @pytest.mark.asyncio
@@ -148,4 +184,4 @@ async def test_owner_cannot_have_parent(client):
     }
     response = await client.post("/v1/auth/register", json=payload)
     assert response.status_code == 400
-    assert "cannot have a fleet_owner_id" in response.json()["detail"]
+    assert "cannot have a fleet_owner_id" in response.json()["message"]
