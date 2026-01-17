@@ -1,0 +1,138 @@
+Epic: Logistics Backend Core
+Phase: Phase-2A – Role-Based Authentication (Flutter Ready)
+Version: 1.1
+Status: Pending Architect Approval
+
+---
+
+epic:
+id: logistics-backend-core
+name: Logistics Backend Core
+
+phase:
+id: phase-2a-auth-roles
+name: Role-Based Authentication APIs
+parent_phase: phase-2
+
+baseline:
+python_version: 3.13.11
+framework: fastapi
+database: postgresql (async sqlalchemy)
+cache: redis
+auth: custom-jwt
+
+roles:
+
+* ADMIN        # Supreme system user (seeded only)
+* HUB_OWNER    # Independent business user
+* FLEET_OWNER  # Independent business user
+* DRIVER       # Always belongs to a Fleet Owner
+
+relationships:
+DRIVER:
+belongs_to: FLEET_OWNER
+HUB_OWNER:
+belongs_to: null
+FLEET_OWNER:
+belongs_to: null
+ADMIN:
+belongs_to: null
+
+context7:
+python: [https://docs.python.org/3.13/](https://docs.python.org/3.13/)
+fastapi: [https://fastapi.tiangolo.com/](https://fastapi.tiangolo.com/)
+sqlalchemy: [https://docs.sqlalchemy.org/en/20/](https://docs.sqlalchemy.org/en/20/)
+pydantic: [https://docs.pydantic.dev/latest/](https://docs.pydantic.dev/latest/)
+python_jose: [https://python-jose.readthedocs.io/en/latest/](https://python-jose.readthedocs.io/en/latest/)
+
+scope:
+will_implement:
+- Role-aware User model
+- Single registration API (role-based)
+- Login API for all roles
+- /auth/me identity endpoint
+- JWT payload with role and ownership data
+- Admin seeding script
+
+will_not_implement:
+- Domain CRUD (hub, fleet, vehicle, trip)
+- Role permission enforcement (RBAC)
+- Alembic migrations
+- Refresh tokens
+- Production secrets
+- Deployment
+
+features:
+
+* id: feature-1-user-model
+  name: User Model Extension
+  tasks:
+
+  * id: task-1-add-role
+    description: Add role column to User model
+  * id: task-2-add-fleet-owner-ref
+    description: Add nullable fleet_owner_id column (used only for DRIVER)
+
+* id: feature-2-auth-schemas
+  name: Authentication Schemas
+  tasks:
+
+  * id: task-3-register-schema
+    description: Registration request schema (role-aware)
+  * id: task-4-login-schema
+    description: Login request schema
+  * id: task-5-token-schema
+    description: JWT response schema
+
+* id: feature-3-auth-apis
+  name: Authentication APIs
+  tasks:
+
+  * id: task-6-register-api
+    description: POST /auth/register
+    rules:
+
+    * ADMIN cannot be created via API
+    * DRIVER requires fleet_owner_id
+    * HUB_OWNER and FLEET_OWNER must not have fleet_owner_id
+
+  * id: task-7-login-api
+    description: POST /auth/login (all roles)
+
+  * id: task-8-me-api
+    description: GET /auth/me (returns role + ownership info)
+
+* id: feature-4-seeding
+  name: Admin Seeding
+  tasks:
+
+  * id: task-9-seed-admin
+    description: Seed ADMIN user via script
+
+jwt:
+payload:
+- user_id
+- role
+- fleet_owner_id (nullable)
+- exp
+
+validation:
+postman_flows:
+- Register HUB_OWNER
+- Register FLEET_OWNER
+- Register DRIVER under Fleet Owner
+- Login all roles
+- Validate /auth/me responses
+
+constraints:
+
+* No permission checks
+* No domain logic
+* No migrations
+
+completion_criteria:
+
+* Users persisted correctly with roles
+* DRIVER linked to Fleet Owner
+* JWT contains correct claims
+* Postman auth flows work as expected

@@ -1,0 +1,148 @@
+phase:
+  id: phase-1-project-setup
+  name: Project Setup, Structure, and First Run
+  goal: >
+    Initialize a FastAPI backend project using Python 3.14.2 with a clean,
+    scalable folder structure, locked dependencies, and a successful first run.
+    Project must be fully generated and validated by Antigravity agents.
+
+  assumptions:
+    - OS: macOS
+    - Python version: 3.14.2 (installed system-wide)
+    - Git is installed
+    - VS Code is installed
+    - Project is created and managed by Antigravity
+    - No local PostgreSQL or Redis (cloud only)
+
+  context7:
+    python:
+      version: "3.14.2"
+      docs: "https://docs.python.org/3.14/"
+    fastapi:
+      docs: "https://fastapi.tiangolo.com/"
+    uvicorn:
+      docs: "https://www.uvicorn.org/"
+    pydantic:
+      docs: "https://docs.pydantic.dev/latest/"
+    sqlalchemy:
+      docs: "https://docs.sqlalchemy.org/en/20/"
+    jose_jwt:
+      docs: "https://python-jose.readthedocs.io/en/latest/"
+    passlib:
+      docs: "https://passlib.readthedocs.io/en/stable/"
+
+  deliverables:
+    - Git-initialized backend repository
+    - Python virtual environment (.venv)
+    - Locked dependency file
+    - Production-ready folder structure
+    - FastAPI health endpoint
+    - Successful local server run
+
+  features:
+    - id: feature-1-environment-setup
+      name: Python Environment Setup
+      tasks:
+        - id: task-1-create-venv
+          description: Create a Python virtual environment using Python 3.14.2
+          agent_actions:
+            - Run: "python3.14 -m venv .venv"
+            - Activate: "source .venv/bin/activate"
+          acceptance_criteria:
+            - .venv directory exists
+            - python --version` returns 3.14.2
+
+        - id: task-2-upgrade-pip
+          description: Upgrade pip inside the virtual environment
+          agent_actions:
+            - Run: "pip install --upgrade pip"
+          acceptance_criteria:
+            - pip version >= latest stable
+
+    - id: feature-2-dependency-installation
+      name: Core Package Installation
+      tasks:
+        - id: task-3-create-requirements
+          description: Create locked requirements.txt compatible with Python 3.14.2
+          output_file: requirements.txt
+          content:
+            - fastapi==0.115.*
+            - uvicorn[standard]==0.30.*
+            - pydantic==2.8.*
+            - sqlalchemy==2.0.*
+            - python-jose[cryptography]==3.3.*
+            - passlib[bcrypt]==1.7.*
+            - python-dotenv==1.0.*
+          acceptance_criteria:
+            - requirements.txt exists
+            - Versions are explicitly pinned
+
+        - id: task-4-install-dependencies
+          description: Install all backend dependencies
+          agent_actions:
+            - Run: "pip install -r requirements.txt"
+          acceptance_criteria:
+            - No installation errors
+            - All packages import successfully
+
+    - id: feature-3-project-structure
+      name: Backend Folder Structure
+      tasks:
+        - id: task-5-create-structure
+          description: Generate scalable FastAPI project structure
+          structure: backend/
+            app/
+            main.py
+            core/
+            config.py
+            security.py
+            api/
+            v1/
+            router.py
+            models/
+            schemas/
+            services/
+            db/
+            session.py
+            utils/
+            tests/
+            .env.example
+            .gitignore
+            README.md
+          acceptance_criteria:
+            - All folders created
+            - main.py exists
+            - Structure follows FastAPI best practices
+
+    - id: feature-4-fastapi-bootstrap
+      name: FastAPI Application Bootstrap
+      tasks:
+        - id: task-6-main-app
+          description: Create FastAPI application entry point
+          output_file: backend/app/main.py
+          requirements:
+            - FastAPI app instance
+            - Health check endpoint (/health)
+            - API router placeholder
+          acceptance_criteria:
+            - Server starts without errors
+            - /health returns 200 OK
+
+        - id: task-7-run-server
+          description: Run FastAPI server locally
+          agent_actions:
+            - Run: "uvicorn backend.app.main:app --reload"
+          acceptance_criteria:
+            - Server runs on http://127.0.0.1:8000
+            - Swagger UI accessible at /docs
+
+  validation:
+    - Open http://127.0.0.1:8000/health
+    - Open http://127.0.0.1:8000/docs
+    - Confirm no runtime errors
+
+  agent_instructions:
+    - Always follow Context7 documentation links
+    - Do not upgrade dependency versions
+    - Generate artifacts for each completed feature
+    - Stop execution if any task fails

@@ -1,0 +1,85 @@
+epic:
+  id: logistics-backend-core
+  name: Logistics Backend Core
+
+phase:
+  id: phase-2-auth-db-foundation
+  name: Authentication & Database Foundation
+  status: draft
+
+baseline:
+  python_version: 3.13.11
+  framework: fastapi
+  auth: custom-jwt
+  database: postgresql
+  cache: redis
+
+context7:
+  python: https://docs.python.org/3.13/
+  fastapi: https://fastapi.tiangolo.com/
+  sqlalchemy: https://docs.sqlalchemy.org/en/20/
+  pydantic: https://docs.pydantic.dev/latest/
+  python_jose: https://python-jose.readthedocs.io/en/latest/
+  redis: https://redis.readthedocs.io/en/stable/
+
+goals:
+  - Establish PostgreSQL connection using SQLAlchemy
+  - Establish Redis client connection
+  - Implement custom JWT authentication core
+  - Prepare foundation for future domain APIs
+
+features:
+  - id: feature-1-env-config
+    name: Environment Configuration
+    tasks:
+      - id: task-1-env-variables
+        description: Extend .env.example with DB, Redis, and JWT variables
+        acceptance:
+          - Environment variables load without error
+
+  - id: feature-2-database-core
+    name: Database Core Setup
+    tasks:
+      - id: task-2-db-engine
+        description: Configure SQLAlchemy engine and session
+        acceptance:
+          - Engine initializes successfully
+
+      - id: task-3-db-base
+        description: Create declarative Base and metadata
+        acceptance:
+          - Base imported without error
+
+  - id: feature-3-user-model
+    name: User Model Foundation
+    tasks:
+      - id: task-4-user-model
+        description: Define minimal User SQLAlchemy model
+        acceptance:
+          - Model mapped correctly
+
+  - id: feature-4-auth-core
+    name: Authentication Core
+    tasks:
+      - id: task-5-jwt-utils
+        description: Implement JWT encode and decode utilities
+        acceptance:
+          - Token generation and validation works
+
+      - id: task-6-auth-dependency
+        description: Create FastAPI dependency for JWT validation
+        acceptance:
+          - Protected route returns 401/200 correctly
+
+constraints:
+  - No CRUD APIs
+  - No Alembic migrations
+  - No role/permission system
+  - No production secrets
+  - No deployment
+
+completion_criteria:
+  - Application starts successfully
+  - PostgreSQL connection initializes
+  - Redis client initializes
+  - JWT authentication works

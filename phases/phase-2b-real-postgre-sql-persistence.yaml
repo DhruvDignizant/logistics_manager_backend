@@ -1,0 +1,112 @@
+PHASE-2B EXECUTABLE YAML
+
+Epic: Logistics Backend Core
+Phase: Phase-2B – Real PostgreSQL Persistence Enablement
+Version: 1.0
+Status: Pending Architect Approval
+
+---
+
+epic:
+id: logistics-backend-core
+name: Logistics Backend Core
+
+phase:
+id: phase-2b-postgres-persistence
+name: PostgreSQL Persistence & Real Auth Storage
+parent_phase: phase-2a
+
+baseline:
+python_version: 3.13.11
+framework: fastapi
+database: postgresql (async sqlalchemy)
+cache: redis (already initialized)
+auth: custom-jwt
+
+objective:
+
+* Enable real PostgreSQL database connection
+* Persist users created via auth APIs
+* Ensure data survives application restart
+* Allow Postman-based end-to-end testing
+
+context7:
+postgresql: [https://www.postgresql.org/docs/](https://www.postgresql.org/docs/)
+sqlalchemy: [https://docs.sqlalchemy.org/en/20/](https://docs.sqlalchemy.org/en/20/)
+asyncpg: [https://magicstack.github.io/asyncpg/current/](https://magicstack.github.io/asyncpg/current/)
+fastapi: [https://fastapi.tiangolo.com/](https://fastapi.tiangolo.com/)
+
+scope:
+will_implement:
+- PostgreSQL connection (local or cloud)
+- Automatic table creation using SQLAlchemy metadata
+- DB-backed registration and login
+- Startup DB health check
+
+will_not_implement:
+- Alembic migrations (deferred)
+- Production hardening
+- Data seeding beyond admin
+- Domain tables
+
+features:
+
+* id: feature-1-db-connection
+  name: PostgreSQL Connection Setup
+  tasks:
+
+  * id: task-1-configure-db-url
+    description: Configure DATABASE_URL for real PostgreSQL
+  * id: task-2-engine-validation
+    description: Validate async engine connection on startup
+
+* id: feature-2-schema-creation
+  name: Schema Initialization
+  tasks:
+
+  * id: task-3-create-tables
+    description: Create tables using Base.metadata.create_all
+    rules:
+
+    * Run at application startup
+    * Idempotent execution
+
+* id: feature-3-auth-persistence
+  name: Persistent Authentication
+  tasks:
+
+  * id: task-4-db-backed-registration
+    description: Persist users in PostgreSQL
+  * id: task-5-db-backed-login
+    description: Authenticate against persisted users
+
+* id: feature-4-runtime-validation
+  name: Runtime Validation
+  tasks:
+
+  * id: task-6-restart-survival
+    description: Validate users exist after server restart
+  * id: task-7-postman-tests
+    description: Manual Postman verification
+
+validation:
+postman_flows:
+- Register HUB_OWNER
+- Register FLEET_OWNER
+- Register DRIVER with fleet_owner_id
+- Restart server
+- Login users
+- Validate /auth/me
+
+constraints:
+
+* No Alembic migrations
+* No domain APIs
+* No role permission enforcement
+
+completion_criteria:
+
+* PostgreSQL connected successfully
+* Users persist across restarts
+* Login works using stored data
+* Postman tests pass end-to-end
